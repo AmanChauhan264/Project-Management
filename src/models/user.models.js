@@ -96,12 +96,12 @@ userSchema.methods.generateRefreshToken = function(){
             username: this.username
         },
         process.env.REFRESH_TOKEN_SECRET,
-        {expiresIn: process.env.REFRESH_TOEKN_EXPIRY}
+        {expiresIn: process.env.REFRESH_TOKEN_EXPIRY}
     )
 };
 
 userSchema.methods.generateTemporaryToken = function(){
-   const unHashedToekn =  crypto.randomBytes(20).toString("hex")
+   const unHashedToken =  crypto.randomBytes(20).toString("hex")
 
    const hashedToken = crypto
    .createHash("sha256")
@@ -109,7 +109,7 @@ userSchema.methods.generateTemporaryToken = function(){
    .digest("hex")
 
    const tokenExpiry = Date.now() + (20*60*1000) // 20 mins
-   return {unHashedToekn, hashedToken, tokenExpiry}
+   return {unHashedToken, hashedToken, tokenExpiry}
 };
 
 export const User = mongoose.model("User", userSchema); 
