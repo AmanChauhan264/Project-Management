@@ -72,7 +72,7 @@ const registerUser = asyncHandler(async(req, res) =>{
         200, 
         {user: createUser},
         "user registered successfully and verification email has been sent to your email",
-     ),
+     )
 });
 
 export {
