@@ -22,57 +22,61 @@ const generateAccessAndRefreshTokens = async (userId)=>{
 }
 
 
-const registerUser = asyncHandler(async(req, res) =>{
-    const {email, username, password, role} = req.body
+const registerUser = asyncHandler(async (req, res) => {
+    const { email, username, password } = req.body;
 
-    const existedUser = await User.findone({
-        $or: [{username}, {email}]
-    })
-    if(existedUser){
-        throw new ApiError(409, "User with email or username already exists", [])
+    const existedUser = await User.findOne({
+        $or: [{ username }, { email }],
+    });
+
+    if (existedUser) {
+        throw new ApiError(409, "User with email or username already exists");
     }
 
     const user = await User.create({
         email,
-        password,
         username,
-        isEmailVerified: false
-    })
+        password,
+        isEmailVerified: false,
+    });
 
-    const { unHashedToken, hashedToken, tokenExpiry} = 
-    user.generateTemporaryToken();
+    const { unHashedToken, hashedToken, tokenExpiry } =
+        user.generateTemporaryToken();
 
-    user.emailVerificationToken = hashedToken
-    user.emailVerificationExpiry = tokenExpiry
+    user.emailVerificationToken = hashedToken;
+    user.emailVerificationExpiry = tokenExpiry;
 
-    await user.save({validateBeforeSave: false})
+    await user.save({ validateBeforeSave: false });
 
-    await sendEmail(
-        {
-            email: user?.email,
-            subject: "please verify your email",
-            mailgenContent: emailVerificationMailgenContent(
-                user.username, 
-                `${req, protocol}://${req.get("host")}/api/v1/users/verify-email/${unhashedToken}`
-            ),
-     });
+    await sendEmail({
+        email: user.email,
+        subject: "Please verify your email",
+        mailgenContent: emailVerificationMailgenContent(
+            user.username,
+            `${req.protocol}://${req.get(
+                "host"
+            )}/api/v1/auth/verify-email/${unHashedToken}`
+        ),
+    });
 
-     const createdUser = await User.findById(user._id).select(
-        "-password -refreshToken -emailVerificationToken -emailVerificationExpiry",
-     )
+    const createdUser = await User.findById(user._id).select(
+        "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
+    );
 
-     if(!createUser){
-        throw new ApiError(500, "something went wrong while registering a user")
-     }
+    if (!createdUser) {
+        throw new ApiError(
+            500,
+            "Something went wrong while registering the user"
+        );
+    }
 
-     return res
-     .status(201)
-     .json
-     new ApiResponse(
-        200, 
-        {user: createUser},
-        "user registered successfully and verification email has been sent to your email",
-     )
+    return res.status(201).json(
+        new ApiResponse(
+            201,
+            { user: createdUser },
+            "User registered successfully. Verification email sent."
+        )
+    );
 });
 
 export {

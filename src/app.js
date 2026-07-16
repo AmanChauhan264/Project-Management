@@ -18,11 +18,23 @@ app.use(cors({
 // import the routes
 
 import healthCheckRouter from "./routes/healthcheck.routes.js"
+import authRouter from "./routes/auth.routes.js"
 
-app.use("/api/v1/healthCheck", healthCheckRouter)
+app.use("/api/v1/healthCheck", healthCheckRouter);
+app.use("/api/v1/auth", authRouter);
 
 app.get("/", (req, res) =>{
     res.send("welcome")
 })
+app.use((err, req, res, next) => {
+    console.error(err);
+
+    return res.status(err.statusCode || 500).json({
+        success: false,
+        message: err.message || "Internal Server Error",
+        errors: err.errors || [],
+        stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+    });
+});
 
 export default app;
