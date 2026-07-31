@@ -193,6 +193,27 @@ user.emailVerificationExpiry = undefined
         )
     )
 })
+const resendEmailVerification = asyncHandler(async (req, res)=>{
+    const user = await User.findById(req.user?._id);
+
+    if(!user){
+        throw new ApiError(404, "User does not exists")
+    }
+    if(user.isEmailVerified){
+        throw new ApiError(409, "Email is already verified")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {},
+            "Mail has been sent to your Email Id"
+        )
+    )
+
+})
 // const getCurrentUser = asyncHandler(async (req, res)=>{})
 
 export {
@@ -200,5 +221,6 @@ export {
     login,
     logoutUser,
     getCurrentUser,
-    verifyEmail
+    verifyEmail,
+    resendEmailVerification
 };
